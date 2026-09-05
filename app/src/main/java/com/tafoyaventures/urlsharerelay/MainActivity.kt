@@ -1,4 +1,4 @@
-package com.example.urlsharerelay
+package com.tafoyaventures.urlsharerelay
 
 import android.content.Intent
 import android.net.Uri

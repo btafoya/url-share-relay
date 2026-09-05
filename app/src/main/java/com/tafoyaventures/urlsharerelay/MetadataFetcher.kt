@@ -1,4 +1,4 @@
-package com.example.urlsharerelay
+package com.tafoyaventures.urlsharerelay
 
 import okhttp3.OkHttpClient
 import okhttp3.Request

@@ -1,4 +1,4 @@
-package com.example.urlsharerelay
+package com.tafoyaventures.urlsharerelay
 
 import org.jsoup.Jsoup
 import org.junit.Assert.assertEquals
