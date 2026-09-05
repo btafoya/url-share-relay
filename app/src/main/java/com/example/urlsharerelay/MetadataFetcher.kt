@@ -3,6 +3,7 @@ package com.example.urlsharerelay
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import java.io.IOException
 import java.net.InetAddress
 import java.util.concurrent.TimeUnit
@@ -50,51 +51,60 @@ object MetadataFetcher {
                 source.buffer.readByteArray(minOf(source.buffer.size, MAX_BODY_BYTES))
             }
             val document = Jsoup.parse(bytes.inputStream(), null, finalUrl)
-
-            fun meta(property: String): String? =
-                document.selectFirst("meta[property=$property]")?.attr("content")
-                    ?.takeIf { it.isNotBlank() }
-
-            fun nameMeta(name: String): String? =
-                document.selectFirst("meta[name=$name]")?.attr("content")
-                    ?.takeIf { it.isNotBlank() }
-
-            fun metaAbs(property: String): String? =
-                document.selectFirst("meta[property=$property]")
-                    ?.takeIf { it.attr("content").isNotBlank() }
-                    ?.absUrl("content")
-                    ?.takeIf { it.isNotBlank() }
-
-            fun linkAbs(rel: String): String? =
-                document.selectFirst("link[rel=$rel]")
-                    ?.takeIf { it.attr("href").isNotBlank() }
-                    ?.absUrl("href")
-                    ?.takeIf { it.isNotBlank() }
-
-            val title = meta("og:title")
-                ?: meta("twitter:title")
-                ?: document.title().takeIf { it.isNotBlank() }
-                ?: ""
-
-            val description = meta("og:description")
-                ?: meta("twitter:description")
-                ?: nameMeta("description")
-                ?: ""
-
-            val image = metaAbs("og:image")
-                ?: metaAbs("twitter:image")
-                ?: linkAbs("image_src")
-
-            val canonical = metaAbs("og:url")
-                ?: linkAbs("canonical")
-                ?: finalUrl
-
-            return PageMetadata(
-                title = title,
-                description = description,
-                imageUrl = image,
-                canonicalUrl = canonical
-            )
+            return parseMetadata(document, finalUrl)
         }
+    }
+
+    internal fun parseMetadata(document: Document, finalUrl: String): PageMetadata {
+        fun meta(property: String): String? =
+            document.selectFirst("meta[property=$property]")?.attr("content")
+                ?.takeIf { it.isNotBlank() }
+
+        fun nameMeta(name: String): String? =
+            document.selectFirst("meta[name=$name]")?.attr("content")
+                ?.takeIf { it.isNotBlank() }
+
+        fun metaAbs(property: String): String? =
+            document.selectFirst("meta[property=$property]")
+                ?.takeIf { it.attr("content").isNotBlank() }
+                ?.absUrl("content")
+                ?.takeIf { it.isNotBlank() }
+
+        fun nameMetaAbs(name: String): String? =
+            document.selectFirst("meta[name=$name]")
+                ?.takeIf { it.attr("content").isNotBlank() }
+                ?.absUrl("content")
+                ?.takeIf { it.isNotBlank() }
+
+        fun linkAbs(rel: String): String? =
+            document.selectFirst("link[rel=$rel]")
+                ?.takeIf { it.attr("href").isNotBlank() }
+                ?.absUrl("href")
+                ?.takeIf { it.isNotBlank() }
+
+        val title = meta("og:title")
+            ?: nameMeta("twitter:title")
+            ?: document.title().takeIf { it.isNotBlank() }
+            ?: ""
+
+        val description = meta("og:description")
+            ?: nameMeta("twitter:description")
+            ?: nameMeta("description")
+            ?: ""
+
+        val image = metaAbs("og:image")
+            ?: nameMetaAbs("twitter:image")
+            ?: linkAbs("image_src")
+
+        val canonical = metaAbs("og:url")
+            ?: linkAbs("canonical")
+            ?: finalUrl
+
+        return PageMetadata(
+            title = title,
+            description = description,
+            imageUrl = image,
+            canonicalUrl = canonical
+        )
     }
 }
