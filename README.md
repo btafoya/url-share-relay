@@ -1,3 +1,5 @@
+<p align="center"><img src="logo.png" width="180" alt="URL Share Relay logo"></p>
+
 # URL Share Relay
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
