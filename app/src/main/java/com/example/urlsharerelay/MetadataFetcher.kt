@@ -3,14 +3,32 @@ package com.example.urlsharerelay
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
+import java.io.IOException
+import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
 object MetadataFetcher {
+    private const val MAX_BODY_BYTES = 2L * 1024 * 1024
+
+    private fun isBlockedHost(host: String): Boolean = try {
+        InetAddress.getAllByName(host).any {
+            it.isLoopbackAddress || it.isSiteLocalAddress || it.isLinkLocalAddress || it.isAnyLocalAddress
+        }
+    } catch (_: Exception) {
+        true
+    }
+
     private val client = OkHttpClient.Builder()
         .followRedirects(true)
-        .followSslRedirects(true)
+        .followSslRedirects(false)
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
+        .callTimeout(20, TimeUnit.SECONDS)
+        .addNetworkInterceptor { chain ->
+            val host = chain.request().url.host
+            if (isBlockedHost(host)) throw IOException("Blocked host: $host")
+            chain.proceed(chain.request())
+        }
         .build()
 
     fun fetch(url: String): PageMetadata {
@@ -25,9 +43,13 @@ object MetadataFetcher {
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) error("HTTP ${response.code}")
 
-            val body = response.body?.string() ?: error("Empty response")
+            val body = response.body ?: error("Empty response")
             val finalUrl = response.request.url.toString()
-            val document = Jsoup.parse(body, finalUrl)
+            val bytes = body.source().let { source ->
+                source.request(MAX_BODY_BYTES)
+                source.buffer.readByteArray(minOf(source.buffer.size, MAX_BODY_BYTES))
+            }
+            val document = Jsoup.parse(bytes.inputStream(), null, finalUrl)
 
             fun meta(property: String): String? =
                 document.selectFirst("meta[property=$property]")?.attr("content")
