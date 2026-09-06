@@ -4,6 +4,7 @@ local.properties
 keystore.properties
 *.jks
 *.keystore
+DEVELOPER-PLAYSTORE.md
 .idea/
 build/
 captures/
