@@ -4,10 +4,16 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.github.triplet.play")
 }
 
 val keystoreProperties = Properties().apply {
     val file = rootProject.file("keystore.properties")
+    if (file.exists()) load(file.inputStream())
+}
+
+val playPublisherProperties = Properties().apply {
+    val file = rootProject.file("play-publisher.properties")
     if (file.exists()) load(file.inputStream())
 }
 
@@ -19,8 +25,8 @@ android {
         applicationId = "com.tafoyaventures.urlsharerelay"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
     }
 
     signingConfigs {
@@ -60,6 +66,14 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+play {
+    if (playPublisherProperties.containsKey("serviceAccountJson")) {
+        serviceAccountCredentials.set(file(playPublisherProperties.getProperty("serviceAccountJson")))
+    }
+    defaultToAppBundles.set(true)
+    track.set("internal")
 }
 
 dependencies {

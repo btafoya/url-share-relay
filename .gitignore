@@ -2,6 +2,7 @@
 .gradle/
 local.properties
 keystore.properties
+play-publisher.properties
 *.jks
 *.keystore
 DEVELOPER-PLAYSTORE.md
