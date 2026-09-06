@@ -10,6 +10,10 @@ Chrome/Twitter/etc. → **Share** → URL Share Relay → fetch metadata → pre
 
 No backend, no analytics, no login, no unnecessary permissions.
 
+## Try it
+
+[Join the internal test on Google Play](https://play.google.com/apps/internaltest/4701120860761523764)
+
 ## Why
 
 Some apps produce ugly or missing link previews when you share a raw URL to them. This app sits in the middle of the share flow: it resolves the URL, pulls the real title/description/image from the page, and lets you fix up the text before it goes anywhere.
@@ -47,7 +51,7 @@ cd url-share-relay
 
 The debug APK is written to `app/build/outputs/apk/debug/`.
 
-Requirements: Android SDK 26+ (minSdk), compiled against SDK 35.
+Requirements: Android SDK 26+ (minSdk), compiled against SDK 36.
 
 ## Notes
 
